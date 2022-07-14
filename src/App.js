@@ -11,6 +11,10 @@ import './App.css';
 function App() {
     const [dice, setDice] = useState(newDices())
     const [tenzies, setTenzies] = useState(false)
+    const [numOfRolls, setNumOfRolls] = useState(0);
+    const [bestScore, setBestScore] = useState(
+        () => JSON.parse(localStorage.getItem("bestScore")) || 0
+    );
     const gameWindow = useRef(null)
 
     useEffect(() => {
@@ -20,6 +24,18 @@ function App() {
         if (allDiceHeld && allSameValue)
             setTenzies(true);
     }, [dice])
+
+    useEffect(() => {
+        if (bestScore === 0) {
+            localStorage.setItem("bestScore", JSON.stringify(numOfRolls))
+            setBestScore(numOfRolls)
+        }
+
+        if (numOfRolls < bestScore && numOfRolls !== 0) {
+            localStorage.setItem("bestScore", JSON.stringify(numOfRolls))
+            setBestScore(numOfRolls)
+        }
+    }, [tenzies])
 
     // Creating new Dice object
     function generateNewDie() {
@@ -43,6 +59,7 @@ function App() {
         setDice(prevDice => {
             return prevDice.map(die => die.isHeld ? die : generateNewDie())
         });
+        setNumOfRolls(prevNum => prevNum + 1)
     }
 
     function holdDice(id) {
@@ -58,6 +75,7 @@ function App() {
     function resetGame() {
         setTenzies(false)
         setDice(newDices())
+        setNumOfRolls(0);
     }
 
     const diceElements = dice.map(die =>
@@ -80,8 +98,8 @@ function App() {
             }
             <h1 className="title">Tenzies</h1>
             <h4 className="description">
-                Roll until all dice are the same. Click
-                each die to freeze it at its current value
+                Roll until all dices are the same. Click
+                each dice to freeze it at its current value
                 between rolls.
             </h4>
             <div className="grid-container">
@@ -93,6 +111,8 @@ function App() {
             >
                 {tenzies ? "New Game" : "Roll"}
             </button>
+            <h3>Rolls: {numOfRolls}</h3>
+            <h3>Best: {bestScore}</h3>
         </main>
     );
 }
